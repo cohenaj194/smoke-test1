@@ -1,0 +1,118 @@
+stages:
+  - slack_post
+  - smoke_test
+  - slack_post2
+
+.setup: &setup
+  tags:
+    - experimental
+  image:
+    name: gcr.io/solutions-team-280017/swiss-alpine:latest
+
+slack_room_post:
+  <<: *setup
+  only:
+    - schedules
+  stage: slack_post
+  script:
+    - |
+      curl -X POST -H 'Content-type: application/json' \
+      --data "{\"text\":\"Running Open Source SNC Smoke Test $(date +%m/%d/%y) Part 1: $CI_PROJECT_URL/pipelines/$CI_PIPELINE_ID\"}" \
+      $SLACK_CHANNEL_WEBHOOK
+
+env_check:
+  <<: *setup
+  only:
+    - pushes
+  stage: smoke_test
+  script:
+    - ./env_check.sh "env$CI_PIPELINE_ID" "environment-check" "default.prod"
+  artifacts:
+    when: always
+    paths:
+      - public/env_check.svg
+
+simple_aws_prod:
+  <<: *setup
+  only:
+    - schedules
+  stage: smoke_test
+  script:
+    - ./smoke_test.sh "awsp$CI_PIPELINE_ID" "simple-aws" "default.prod"
+  artifacts:
+    when: always
+    paths:
+      - public/simple_aws_prod.svg
+
+simple_aws_stage:
+  <<: *setup
+  only:
+    - schedules
+  stage: smoke_test
+  script:
+    - ./smoke_test.sh "awss$CI_PIPELINE_ID" "simple-aws" "default.staging"
+  artifacts:
+    when: always
+    paths:
+      - public/simple_aws_stage.svg
+
+simple_azure_prod:
+  <<: *setup
+  only:
+    - schedules
+  stage: smoke_test
+  script:
+    - ./smoke_test.sh "azp$CI_PIPELINE_ID" "simple-azure" "default.prod"
+  artifacts:
+    when: always
+    paths:
+      - public/simple_azure_prod.svg
+
+simple_azure_stage:
+  <<: *setup
+  only:
+    - schedules
+  stage: smoke_test
+  script:
+    - ./smoke_test.sh "azs$CI_PIPELINE_ID" "simple-azure" "default.staging"
+  artifacts:
+    when: always
+    paths:
+      - public/simple_azure_stage.svg
+      
+simple_gcp_prod:
+  <<: *setup
+  only:
+    - schedules
+  stage: smoke_test
+  script:
+    - ./smoke_test.sh "gcpp$CI_PIPELINE_ID" "simple-gcp" "default.prod"
+  artifacts:
+    when: always
+    paths:
+      - public/simple_gcp_prod.svg
+
+simple_gcp_stage:
+  <<: *setup
+  only:
+    - schedules
+  stage: smoke_test
+  script:
+    - ./smoke_test.sh "gcps$CI_PIPELINE_ID" "simple-gcp" "default.staging"
+  artifacts:
+    when: always
+    paths:
+      - public/simple_gcp_stage.svg
+
+slack_room_post2:
+  <<: *setup
+  only:
+    - schedules
+  stage: slack_post2
+  tags:
+    - experimental
+  script:
+    - |
+      curl -X POST -H 'Content-type: application/json' \
+      --data "{\"text\":\":party_parrot: Open Source SNC Smoke Test Part 1 Success :party_parrot:\"}" \
+      $SLACK_CHANNEL_WEBHOOK
