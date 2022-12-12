@@ -15,9 +15,9 @@ env:
 on:
   push:
   workflow_dispatch:
-  schedule:
-    # 1pm est = '0 17 * * *'
-    - cron:  '0 17 * * *'
+#   schedule:
+#     # 1pm est = '0 17 * * *'
+#     - cron:  '0 17 * * *'
 
 jobs:
   env-check-prod:
